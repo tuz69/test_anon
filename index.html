@@ -8,67 +8,64 @@
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/blueimp-load-image@5.16.0/js/load-image.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
-<style>
-  body { font-family:'Inter',sans-serif; transition: background-color .3s, color .3s; }
-  .container { max-width: 900px; }
-  canvas { display:block; max-width:100%; height:auto; border-radius:15px; }
-  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; justify-content:center; align-items:center; z-index:50; opacity:0; visibility:hidden; transition: opacity .3s, visibility .3s; }
-  .modal-overlay.visible { opacity:1; visibility:visible; }
-  .modal-content { background-color:var(--tw-bg-opacity) white; padding:1.5rem; border-radius:.75rem; max-width:90%; max-height:90%; overflow:auto; position:relative; }
-</style>
 <script>
-tailwind.config={darkMode:'class'};
+tailwind.config = {darkMode:'class'};
 </script>
+<style>
+body{font-family:'Inter',sans-serif;transition:background-color .3s,color .3s;}
+.container{max-width:900px;}
+canvas{display:block;max-width:100%;height:auto;border-radius:15px;}
+.modal-overlay{position:fixed;inset:0;background-color:rgba(0,0,0,.75);display:flex;justify-content:center;align-items:center;z-index:50;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;}
+.modal-overlay.visible{opacity:1;visibility:visible;}
+.modal-content{background-color:white;padding:1.5rem;border-radius:0.75rem;max-width:90%;max-height:90%;overflow:auto;position:relative;}
+</style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-4">
 <div class="container mx-auto flex flex-col items-center gap-6">
-  <div class="flex justify-between w-full items-center">
-    <h1 class="text-3xl font-bold">Анонімізатор фото</h1>
-    <button id="themeToggle" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">🌞 / 🌙</button>
-  </div>
-  <p class="max-w-xl text-center text-gray-600 dark:text-gray-300">
-    Завантажте фото — ми автоматично розмиємо обличчя. Усе локально у браузері.
-  </p>
-
-  <input type="file" id="imageUpload" accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.bmp,.gif,.webp,.tiff" class="hidden">
-  <label for="imageUpload" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded cursor-pointer shadow">Завантажити фото</label>
-
-  <div id="loadingArea" class="w-full flex flex-col items-center mt-2">
-    <div id="progressBarContainer" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 hidden">
-      <div id="progressBarFill" class="bg-blue-600 h-2.5 rounded-full" style="width:0%"></div>
-    </div>
-    <div id="message" class="text-sm mt-2"></div>
-  </div>
-
-  <div id="thumbnailContainer" class="mt-4 mb-2 flex justify-center hidden">
-    <img id="thumbnailPreview" class="cursor-pointer rounded-lg shadow max-w-[200px] max-h-[200px] border dark:border-gray-600" alt="Мініатюра">
-  </div>
-
-  <button id="directDownloadBtn" class="hidden px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded shadow">Завантажити фото</button>
+<div class="flex justify-between w-full items-center">
+<h1 class="text-3xl font-bold">Анонімізатор фото</h1>
+<button id="themeToggle" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">🌞 / 🌙</button>
 </div>
-
+<p class="max-w-xl text-center text-gray-600 dark:text-gray-300">
+Завантажте фото — ми автоматично розмиємо обличчя. Усе відбувається локально у вашому браузері.
+</p>
+<input type="file" id="imageUpload" accept="image/*,.heic,.heif" class="hidden">
+<label for="imageUpload" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded cursor-pointer shadow">
+Завантажити фото
+</label>
+<div id="loadingArea" class="w-full flex flex-col items-center mt-2">
+<div id="progressBarContainer" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 hidden">
+<div id="progressBarFill" class="bg-blue-600 h-2.5 rounded-full" style="width:0%"></div>
+</div>
+<div id="message" class="text-sm mt-2"></div>
+</div>
+<div id="thumbnailContainer" class="mt-4 mb-2 flex justify-center hidden">
+<img id="thumbnailPreview" class="cursor-pointer rounded-lg shadow max-w-[200px] max-h-[200px] border dark:border-gray-600" alt="Мініатюра">
+</div>
+<button id="directDownloadBtn" class="hidden px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded shadow">
+Завантажити фото
+</button>
+</div>
 <div id="imageModal" class="modal-overlay">
-  <div class="modal-content dark:bg-gray-800">
-    <button id="closeModalBtn" class="absolute top-2 right-3 text-3xl text-gray-400 hover:text-gray-100">&times;</button>
-    <canvas id="mainCanvas" class="block rounded border dark:border-gray-700"></canvas>
-    <button id="modalDownloadBtn" class="mt-4 w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded shadow">
-      Завантажити анонімізоване фото (повний розмір)
-    </button>
-  </div>
+<div class="modal-content dark:bg-gray-800">
+<button id="closeModalBtn" class="absolute top-2 right-3 text-3xl text-gray-400 hover:text-gray-100">&times;</button>
+<canvas id="mainCanvas" class="block rounded border dark:border-gray-700"></canvas>
+<button id="modalDownloadBtn" class="mt-4 w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded shadow">
+Завантажити анонімізоване фото (повний розмір)
+</button>
 </div>
-
+</div>
 <script>
 const themeToggle=document.getElementById('themeToggle');
-let savedTheme=localStorage.getItem('theme');
+function applyTheme(theme){if(theme==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}
 const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
-if(!savedTheme) savedTheme=prefersDark?'dark':'light';
-document.documentElement.classList.toggle('dark',savedTheme==='dark');
+let savedTheme=localStorage.getItem('theme')|| (prefersDark?'dark':'light');
+applyTheme(savedTheme);
 themeToggle.addEventListener('click',()=>{
-  savedTheme=savedTheme==='dark'?'light':'dark';
-  localStorage.setItem('theme',savedTheme);
-  document.documentElement.classList.toggle('dark',savedTheme==='dark');
+savedTheme=(savedTheme==='dark')?'light':'dark';
+localStorage.setItem('theme',savedTheme);
+applyTheme(savedTheme);
 });
-
 const imageUpload=document.getElementById('imageUpload');
 const thumbnailPreview=document.getElementById('thumbnailPreview');
 const thumbnailContainer=document.getElementById('thumbnailContainer');
@@ -81,100 +78,66 @@ const progressBarContainer=document.getElementById('progressBarContainer');
 const progressBarFill=document.getElementById('progressBarFill');
 const messageDiv=document.getElementById('message');
 const ctx=mainCanvas.getContext('2d');
-
 let currentImage=null;
 const MODEL_URL='https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights/';
 const BLUR_STRENGTH=20,BLUR_PADDING=20,MAX_IMAGE_DIMENSION=768;
 
-function setProgress(percent,msg,show=true){
-  messageDiv.textContent=msg;
-  if(show){progressBarContainer.classList.remove('hidden'); progressBarFill.style.width=`${percent}%`;}
-  else progressBarContainer.classList.add('hidden');
-}
-
-async function loadModels(){
-  setProgress(0,'Завантаження моделей...',true);
-  await Promise.all([
-    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
-  ]);
-  setProgress(100,'Готово',false);
-}
+function setProgress(percent,msg,show=true){messageDiv.textContent=msg;if(show){progressBarContainer.classList.remove('hidden');progressBarFill.style.width=`${percent}%`;}else{progressBarContainer.classList.add('hidden');}}
+async function loadModels(){setProgress(0,'Завантаження моделей...',true);await Promise.all([faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)]);setProgress(100,'Готово',false);}
 window.onload=loadModels;
 
 async function handleFile(file){
-  let processFile=file;
-  const isHEIC=file.type==='image/heic' || file.name.endsWith('.heic') || file.type==='image/heif';
-  if(isHEIC){
-    setProgress(0,'Конвертація HEIC...',true);
-    const arrayBuffer=await file.arrayBuffer();
-    processFile=await heic2any({blob:new Blob([arrayBuffer]), toType:'image/png'});
-  }
-
-  const url=URL.createObjectURL(processFile);
-  const img=new Image();
-  img.onload=async ()=>{
-    URL.revokeObjectURL(url);
-    const canvas=await loadImage(img, {canvas:true, orientation:true, maxWidth:MAX_IMAGE_DIMENSION, maxHeight:MAX_IMAGE_DIMENSION});
-    currentImage=canvas;
-    mainCanvas.width=canvas.width;
-    mainCanvas.height=canvas.height;
-    ctx.drawImage(canvas,0,0);
-    await detectAndBlurFaces(canvas);
-  };
-  img.src=url;
+let processFile=file;
+const isHEIC=file.type==='image/heic'||file.name.endsWith('.heic')||file.type==='image/heif';
+if(isHEIC){
+setProgress(0,'Конвертація HEIC...',true);
+const arrayBuffer=await file.arrayBuffer();
+let converted=await heic2any({blob:new Blob([arrayBuffer]),toType:'image/png'});
+if(converted instanceof Array)converted=converted[0];
+processFile=new File([converted],'converted.png',{type:'image/png'});
+}
+setProgress(0,'Завантаження фото...',true);
+loadImage(processFile,async function(canvas){
+if(canvas.type==='error'){setProgress(0,'Помилка зображення',false);return;}
+currentImage=canvas;
+mainCanvas.width=canvas.width;
+mainCanvas.height=canvas.height;
+ctx.drawImage(canvas,0,0);
+await detectAndBlurFaces();
+},{orientation:true,canvas:true,crossOrigin:'Anonymous',maxWidth:MAX_IMAGE_DIMENSION,maxHeight:MAX_IMAGE_DIMENSION,pixelRatio:window.devicePixelRatio||1});
 }
 
-imageUpload.addEventListener('change',async e=>{
-  const file=e.target.files[0]; if(!file) return;
-  thumbnailContainer.classList.add('hidden');
-  directDownloadBtn.classList.add('hidden');
-  imageModal.classList.remove('visible');
-  messageDiv.textContent='';
-  setProgress(0,'Завантаження зображення...',true);
-  await handleFile(file);
+imageUpload.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+
+async function detectAndBlurFaces(){
+if(!currentImage){setProgress(0,'Спершу завантажте фото',false);return;}
+setProgress(25,'Виявлення облич...',true);
+ctx.drawImage(currentImage,0,0);
+const detectionOptions=new faceapi.SsdMobilenetv1Options({minConfidence:0.1});
+const detections=await faceapi.detectAllFaces(currentImage,detectionOptions).withFaceLandmarks();
+setProgress(75,`Обробка ${detections.length} облич...`);
+detections.forEach(det=>{
+const {x,y,width,height}=det.detection.box;
+const px=Math.max(0,x-BLUR_PADDING),py=Math.max(0,y-BLUR_PADDING);
+const pw=Math.min(mainCanvas.width-px,width+2*BLUR_PADDING);
+const ph=Math.min(mainCanvas.height-py,height+2*BLUR_PADDING);
+ctx.save();ctx.beginPath();ctx.rect(px,py,pw,ph);ctx.clip();ctx.filter=`blur(${BLUR_STRENGTH}px)`;ctx.drawImage(currentImage,0,0);ctx.restore();
 });
-
-async function detectAndBlurFaces(img){
-  if(!currentImage){setProgress(0,'Спершу завантажте фото',false); return;}
-  setProgress(25,'Виявлення облич...',true);
-  ctx.drawImage(currentImage,0,0);
-  const detectionOptions=new faceapi.SsdMobilenetv1Options({minConfidence:0.1});
-  const detections=await faceapi.detectAllFaces(currentImage,detectionOptions).withFaceLandmarks();
-  setProgress(75,`Обробка ${detections.length} облич...`);
-  detections.forEach(det=>{
-    const {x,y,width,height}=det.detection.box;
-    const px=Math.max(0,x-BLUR_PADDING),py=Math.max(0,y-BLUR_PADDING);
-    const pw=Math.min(mainCanvas.width-px,width+2*BLUR_PADDING);
-    const ph=Math.min(mainCanvas.height-py,height+2*BLUR_PADDING);
-    ctx.save(); ctx.beginPath(); ctx.rect(px,py,pw,ph); ctx.clip();
-    ctx.filter=`blur(${BLUR_STRENGTH}px)`;
-    ctx.drawImage(currentImage,0,0);
-    ctx.restore();
-  });
-  setProgress(100,'Готово! Натисніть мініатюру.',false);
-
-  const ratio=Math.min(1,200/mainCanvas.width,200/mainCanvas.height);
-  const thumbCanvas=document.createElement('canvas');
-  thumbCanvas.width=mainCanvas.width*ratio; thumbCanvas.height=mainCanvas.height*ratio;
-  thumbCanvas.getContext('2d').drawImage(mainCanvas,0,0,mainCanvas.width,mainCanvas.height,0,0,thumbCanvas.width,thumbCanvas.height);
-  thumbnailPreview.src=thumbCanvas.toDataURL('image/png');
-  thumbnailContainer.classList.remove('hidden');
-  directDownloadBtn.classList.remove('hidden');
+setProgress(100,'Готово! Натисніть мініатюру.',false);
+const ratio=Math.min(1,200/mainCanvas.width,200/mainCanvas.height);
+const thumbCanvas=document.createElement('canvas');
+thumbCanvas.width=mainCanvas.width*ratio;thumbCanvas.height=mainCanvas.height*ratio;
+thumbCanvas.getContext('2d').drawImage(mainCanvas,0,0,mainCanvas.width,mainCanvas.height,0,0,thumbCanvas.width,thumbCanvas.height);
+thumbnailPreview.src=thumbCanvas.toDataURL('image/png');
+thumbnailContainer.classList.remove('hidden');
+directDownloadBtn.classList.remove('hidden');
 }
 
-thumbnailPreview.addEventListener('click',()=>{if(currentImage) imageModal.classList.add('visible');});
+thumbnailPreview.addEventListener('click',()=>{if(currentImage)imageModal.classList.add('visible');});
 closeModalBtn.addEventListener('click',()=>{imageModal.classList.remove('visible');});
-// Закриття модалки при кліку на фон
-imageModal.addEventListener('click',e=>{if(e.target===imageModal) imageModal.classList.remove('visible');});
+imageModal.addEventListener('click',e=>{if(e.target===imageModal)imageModal.classList.remove('visible');});
 
-function downloadImage(){
-  if(!currentImage){messageDiv.textContent='Спершу обробіть фото'; return;}
-  const link=document.createElement('a');
-  link.download='anonymized_photo.png';
-  link.href=mainCanvas.toDataURL('image/png');
-  document.body.appendChild(link); link.click(); document.body.removeChild(link);
-}
+function downloadImage(){if(!currentImage){messageDiv.textContent='Спершу обробіть фото';return;}const link=document.createElement('a');link.download='anonymized_photo.png';link.href=mainCanvas.toDataURL('image/png');document.body.appendChild(link);link.click();document.body.removeChild(link);}
 directDownloadBtn.addEventListener('click',downloadImage);
 modalDownloadBtn.addEventListener('click',downloadImage);
 </script>
